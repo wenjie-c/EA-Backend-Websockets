@@ -16,75 +16,69 @@ const router = express();
 
 /** Connect to Mongo */
 mongoose
-    .connect(config.mongo.url, { retryWrites: true, w: 'majority' })
-    .then(() => {
-        Logging.info('Mongo connected successfully.');
-        StartServer();
-    })
-    .catch((error) => Logging.error(error));
+  .connect(config.mongo.url, { retryWrites: true, w: 'majority' })
+  .then(() => {
+    Logging.info('Mongo connected successfully.');
+    StartServer();
+  })
+  .catch((error) => Logging.error(error));
 
 /** Only Start Server if Mongoose Connects */
 const StartServer = () => {
-    /** Log the request */
-    router.use((req, res, next) => {
-        Logging.info(
-            `Incoming - METHOD: [${req.method}] - URL: [${req.url}] - IP: [${req.socket.remoteAddress}]`
-        );
+  /** Log the request */
+  router.use((req, res, next) => {
+    Logging.info(`Incoming - METHOD: [${req.method}] - URL: [${req.url}] - IP: [${req.socket.remoteAddress}]`);
 
-        res.on('finish', () => {
-            Logging.info(
-                `Result - METHOD: [${req.method}] - URL: [${req.url}] - IP: [${req.socket.remoteAddress}] - STATUS: [${res.statusCode}]`
-            );
-        });
-
-        next();
+    res.on('finish', () => {
+      Logging.info(`Result - METHOD: [${req.method}] - URL: [${req.url}] - IP: [${req.socket.remoteAddress}] - STATUS: [${res.statusCode}]`);
     });
 
-    router.use(express.urlencoded({ extended: true }));
-    router.use(express.json());
+    next();
+  });
 
-    /** Rules of our API */
-    router.use(cors());
+  router.use(express.urlencoded({ extended: true }));
+  router.use(express.json());
 
-    /** Swagger */
-    router.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  /** Rules of our API */
+  router.use(cors());
 
-    /** Routes */
-    router.use('/organizaciones', organizacionRoutes);
-    router.use('/usuarios', usuarioRoutes);
-    router.use('/mensajes', mensajeRoutes);
+  /** Swagger */
+  router.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-    /** Healthcheck */
-    router.get('/ping', (req, res, next) => res.status(200).json({ hello: 'world' }));
+  /** Routes */
+  router.use('/organizaciones', organizacionRoutes);
+  router.use('/usuarios', usuarioRoutes);
+  router.use('/mensajes', mensajeRoutes);
 
-    /** Error handling */
-    router.use((req, res, next) => {
-        const error = new Error('Not found');
+  /** Healthcheck */
+  router.get('/ping', (req, res, next) => res.status(200).json({ hello: 'world' }));
 
-        Logging.error(error);
+  /** Error handling */
+  router.use((req, res, next) => {
+    const error = new Error('Not found');
 
-        res.status(404).json({
-            message: error.message
-        });
+    Logging.error(error);
+
+    res.status(404).json({
+      message: error.message
     });
+  });
 
-    /** Create HTTP Server */
-    const httpServer = http.createServer(router);
+  /** Create HTTP Server */
+  const httpServer = http.createServer(router);
 
-    /** Initialize Socket.io */
-    const io = new SocketIOServer(httpServer, {
-        cors: {
-            origin: "http://localhost:4200", // Angular default port
-            methods: ["GET", "POST"]
-        }
-    });
+  /** Initialize Socket.io */
+  const io = new SocketIOServer(httpServer, {
+    cors: {
+      origin: 'http://localhost:9001', // Angular default port
+      methods: ['GET', 'POST']
+    }
+  });
 
-    /** Initialize Mensaje Service para gestionar sockets */
-    const mensajeService = new MensajeService(io);
-    mensajeService.inicializarSockets();
+  /** Initialize Mensaje Service para gestionar sockets */
+  const mensajeService = new MensajeService(io);
+  mensajeService.inicializarSockets();
 
-    /** Listen on configured port via httpServer (NOT router.listen) */
-    httpServer.listen(config.server.port, () =>
-        Logging.info(`Server is running on port ${config.server.port}`)
-    );
+  /** Listen on configured port via httpServer (NOT router.listen) */
+  httpServer.listen(config.server.port, () => Logging.info(`Server is running on port ${config.server.port}`));
 };

@@ -100,7 +100,7 @@ router.post('/', ValidateJoi(Schemas.usuario.create), controller.createUsuario);
  *       404:
  *         description: No encontrado
  */
-router.get('/:usuarioId',authenticateToken ,controller.readUsuario);
+router.get('/:usuarioId', authenticateToken, controller.readUsuario);
 
 /**
  * @openapi
@@ -114,7 +114,7 @@ router.get('/:usuarioId',authenticateToken ,controller.readUsuario);
  *       200:
  *         description: OK
  */
-router.get('/',authenticateToken, controller.readAll);
+router.get('/', authenticateToken, controller.readAll);
 
 /**
  * @openapi
@@ -145,7 +145,7 @@ router.get('/',authenticateToken, controller.readAll);
  *       422:
  *         description: Validación fallida (Joi)
  */
-router.put('/:usuarioId',authenticateToken, ValidateJoi(Schemas.usuario.update), controller.updateUsuario);
+router.put('/:usuarioId', authenticateToken, ValidateJoi(Schemas.usuario.update), controller.updateUsuario);
 
 /**
  * @openapi
@@ -168,6 +168,46 @@ router.put('/:usuarioId',authenticateToken, ValidateJoi(Schemas.usuario.update),
  *       404:
  *         description: No encontrado
  */
-router.delete('/:usuarioId',authenticateToken, controller.deleteUsuario);
+router.delete('/:usuarioId', authenticateToken, controller.deleteUsuario);
+
+/**
+ * @openapi
+ * /usuarios/login:
+ *   post:
+ *     summary: Login
+ *     tags:
+ *       - Usuarios
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: Your account's email
+ *                 example: janedoe@gmail.com
+ *               password:
+ *                 type: string
+ *                 example: Lorem Ipsum
+ *     responses:
+ *       200:
+ *         description: A successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 email:
+ *                   type: string
+ *                   example: janedoe@gmail.com
+ *                 password:
+ *                   type: string
+ *                   example: Lorem Ipsum
+ *       400:
+ *         description: Email or password ain't correct.
+ */
+router.post('/login', controller.login);
 
 export default router;

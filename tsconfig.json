@@ -8,5 +8,6 @@
         "strict": true,
         "skipLibCheck": true
     },
-    "include": ["src/**/*", "src/models/.ts"]
+    "include": ["src/**/*", "src/models/.ts"],
+    "files": ["types.d.ts"]
 }
